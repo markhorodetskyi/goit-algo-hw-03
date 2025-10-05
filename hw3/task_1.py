@@ -17,9 +17,9 @@ def check_date_format(date: str) -> datetime.date:
     if re.match(pattern_1, date):
         return datetime.strptime(date, '%Y-%m-%d').date()
     elif re.match(pattern_2, date):
-        return datetime.strptime(date, '%d.%m.%Y')
+        return datetime.strptime(date, '%d.%m.%Y').date()
     elif re.match(pattern_3, date):
-        return datetime.strptime(date, '%Y/%m/%d')
+        return datetime.strptime(date, '%Y/%m/%d').date()
     else:
         return False
 
