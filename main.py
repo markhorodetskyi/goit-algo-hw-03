@@ -1,69 +1,71 @@
-from hw3.task_1 import get_days_from_today
-from hw3.task_2 import input_params, get_numbers_ticket
-from hw3.task_3 import normalize_phone
+from datetime import datetime
+from random import sample
+import re
 
-menu = (f"\n"
-        f"Choose an option:\n"
-        f"1. Task 1. Get days from today\n"
-        f"2. Task 2. Ticket numbers\n"
-        f"3. Task 3. Normalise phone numbers\n"
-        f"""4 or press "Enter" to exit\n"""
-        f"---------------------\n"
-        f"Input a number from 1 to 4\n"
-        f"Your choice: ")
+raw_numbers = [
+    "067\\t123 4567",
+    "(095) 234-5678\\n",
+    "+380 44 123 4567",
+    "380501234567",
+    "    +38(050)123-32-34",
+    "     0503451234",
+    "(050)8889900",
+    "38050-111-22-22",
+    "38050 111 22 11   ",
+]
 
 
-def main():
-    while True:
-        menu_choice = input(menu)
-        match menu_choice:
-            case "1":
-                date_input = input("Enter a date: ")
-                try:
-                    days = get_days_from_today(date_input)
-                    print(f"Days from today: {days}")
-                except ValueError as e:
-                    print(e)
+def get_days_from_today(date: str) -> int | str:
+    """
+    Promt
+    """
+    try:
+        parsed_date = datetime.strptime(date, '%Y-%m-%d').date()
+        today = datetime.today().date()
+        delta = parsed_date - today
+        return int(delta.days)
+    except ValueError:
+        return "Unknow date format. Please use 'YYYY-MM-DD'"
 
-            case "2":
-                try:
-                    min_value, max_value, quantity = input_params()
-                    ticket_numbers = get_numbers_ticket(min_value, max_value, quantity)
-                    print(f"Generated ticket numbers: {ticket_numbers}")
-                except ValueError as e:
-                    print("Incorrect input. Please try again.")
-                    print(f"Error: {e}")
 
-            case "3":
-                phone_numbers = [
-                    "067\\t123 4567",
-                    "(095) 234-5678\\n",
-                    "+380 44 123 4567",
-                    "380501234567",
-                    "    +38(050)123-32-34",
-                    "     0503451234",
-                    "(050)8889900",
-                    "38050-111-22-22",
-                    "38050 111 22 11   ",
-                ]
-                print(f"Example phone numbers: {phone_numbers}")
-                try:
-                    normalised_numbers = [normalize_phone(num) for num in phone_numbers]
-                    print(f"Normalised phone numbers: {normalised_numbers}")
-                except ValueError as e:
-                    print(f"Error normalizing phone numbers: {e}")
+def get_numbers_ticket(min_val: int, max_val: int, quantity: int) -> list[int]:
+    """
+    :param min_val: Minimum number in the range (inclusive).
+    :param max_val: Maximum number in the range (inclusive).
+    :param quantity: Number of unique random numbers to generate.
+    :return: A sorted list of unique random numbers within the specified range.
+    """
+    if min_val < 1 or min_val > 999:
+        return []
+    if max_val <= min_val or max_val > 1000:
+        return []
+    if quantity <= 0 or quantity > (max_val - min_val + 1):
+        return []
 
-            case "4":
-                print("Exiting the program.")
-                break
+    numbers = list(sample(range(min_val, max_val + 1), quantity))
+    numbers.sort()
+    return numbers
 
-            case "":
-                print("Exiting the program.")
-                break
 
-            case _:
-                print("Invalid choice. Please enter a number from 1 to 4.")
+def normalize_phone(phone_number: str) -> str:
+    """
+    :param phone_number: A string representing a phone number in various formats.
+    :return: A normalized phone number in the format '+380XXXXXXXXX' or raises ValueError if invalid.
+    """
+    digits = re.sub(r'\D', '', phone_number)
+
+    # Handle different cases based on the number of digits and prefixes
+    if digits.startswith('0'):
+        return '+380' + digits[1:]
+    elif digits.startswith('380'):
+        return '+' + digits
+    elif digits.startswith('80'):
+        return '+3' + digits[1:]
+    else:
+        print("Invalid phone number format.")
 
 
 if __name__ == "__main__":
-    main()
+    print(get_days_from_today("2020.10.09"))
+    print(get_numbers_ticket(299, 300, 3))
+    print([normalize_phone(num) for num in raw_numbers])
